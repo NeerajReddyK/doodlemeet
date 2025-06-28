@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 const slug = "neerajroom1";
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNWRiMjViNy1iZjc5LTRkMTItYTQ3MC1iZDg1OTEzNjRlMGMiLCJlbWFpbCI6Im5lZXJhajFAZ21haWwuY29tIiwiaWF0IjoxNzUxMDE1Nzc3LCJleHAiOjE3NTE2MjA1Nzd9.xE0Mfa3OVCQg6J-CwgJOH1cHtqw3JvlOIcRTsL86ISQ";
@@ -134,11 +134,25 @@ const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNWRiMjViNy1i
 
 // export default Canvas;
 
+interface initMessageSchema {
+  id: number,
+  message: {
+    type: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  },
+  slug: string,
+  userId: string,
+}
+
 const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const xDown = useRef<number>(0);
   const yDown = useRef<number>(0);
   const isDrawing = useRef(false);
+  const initMessages = useRef<initMessageSchema []>([])
   const beUrl = process.env.NEXT_PUBLIC_BE_URL;
 
   const getCanvasCoordinates = (canvas: HTMLCanvasElement, e: MouseEvent) => {
@@ -147,6 +161,15 @@ const Canvas = () => {
       x: e.clientX - coords.left,
       y: e.clientY - coords.top
     })
+  }
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if(!canvas) return;
+    const context = canvas.getContext("2d");
+    if(!context) return;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
@@ -173,7 +196,6 @@ const Canvas = () => {
       console.log("undefined backend url")
       return;
     }
-
 
     const data = await axios.post(`${beUrl}/chats/${slug}`, {
       message: {
@@ -205,13 +227,17 @@ const Canvas = () => {
     const context = canvas.getContext("2d");
     if(!context) return;
 
+    clearCanvas();
+    initCanvas();
+
     const coords = getCanvasCoordinates(canvas, e);
     const width = coords.x - xDown.current; 
     const height = coords.y - yDown.current;
-
+    xDown.current = width < 0 ? xDown.current + width: xDown.current; 
+    yDown.current = height < 0 ? yDown.current + height : yDown.current; 
     context.strokeStyle = "white";
-    context.strokeRect(xDown.current, yDown.current, width, height);
-    context.clearRect(xDown.current, yDown.current, width, height);
+    context.strokeRect(xDown.current, yDown.current, Math.abs(width), Math.abs(height));
+    
   }, []);
 
   const fetchData = async () => {
@@ -229,6 +255,26 @@ const Canvas = () => {
     }));
     return parsedMessages;
   }
+  const initCanvas = async () => {
+    const canvas = canvasRef.current;
+    if(!canvas) {
+      console.log("canvas is null");
+      return;
+    }
+    const context = canvas.getContext("2d");
+    if(!context) {
+      console.log("context is null");
+      return;
+    }
+    const parsedMessages = await fetchData();
+    console.log(parsedMessages);
+    context.strokeStyle = "white";
+    parsedMessages.forEach((msg: any) => {
+      const {x, y, width, height} = msg.message;
+      context.strokeRect(x, y, width, height);
+    });
+    initMessages.current = parsedMessages;
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -242,14 +288,6 @@ const Canvas = () => {
       return;
     }
 
-    const initCanvas = async () => {
-      const parsedMessages = await fetchData();
-      context.strokeStyle = "white";
-      parsedMessages.forEach((msg: any) => {
-        const {x, y, width, height} = msg.message;
-        context.strokeRect(x, y, width, height);
-      })
-    }
     initCanvas();
 
 
