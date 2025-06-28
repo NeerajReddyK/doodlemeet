@@ -5,9 +5,12 @@ import jwt from "jsonwebtoken";
 import { jwtSecret } from "@repo/common-backend/jwtSecret"
 import { AuthenticatedRequest, userMiddleware } from "./userMiddleware";
 import { createRoomSchema, createChatSchema } from "@repo/common/types";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json())
+
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -256,7 +259,7 @@ app.post("/chats/:slug", userMiddleware, async (req: AuthenticatedRequest, res) 
   try {
     const result = await prismaClient.chats.create({
       data: {
-        message: parsedData.data.message,
+        message: JSON.stringify(parsedData.data.message),
         slug: slug,
         userId 
       }
