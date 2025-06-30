@@ -83,7 +83,6 @@ const Canvas = () => {
       }
     }
     );
-    console.log(data);
     initMessages.current.push({
       id: 0,
       message: {
@@ -150,7 +149,6 @@ const Canvas = () => {
       return;
     }
     const parsedMessages = await fetchData();
-    console.log(parsedMessages);
     context.strokeStyle = "white";
     parsedMessages.forEach((msg: any) => {
       const {x, y, width, height} = msg.message;
@@ -171,7 +169,6 @@ const Canvas = () => {
       return;
     }
     context.strokeStyle = "white";
-    console.log("initMessages from secondary: ", initMessages.current);
     initMessages.current.forEach((msg) => {
       const {x, y, width, height} = msg.message;
       context.strokeRect(x, y, width, height);
@@ -196,6 +193,11 @@ const Canvas = () => {
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth; 
       canvas.height = canvas.offsetHeight;
+      context.strokeStyle = "white";
+      initMessages.current.forEach((msg) => {
+        const {x, y, width, height} = msg.message;
+        context.strokeRect(x, y, width, height);
+      });
     }
     resizeCanvas();
 
