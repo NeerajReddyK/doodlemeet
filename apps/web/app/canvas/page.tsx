@@ -1,138 +1,9 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
-const slug = "neerajroom1";
+const slug = "neerajroom2";
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNWRiMjViNy1iZjc5LTRkMTItYTQ3MC1iZDg1OTEzNjRlMGMiLCJlbWFpbCI6Im5lZXJhajFAZ21haWwuY29tIiwiaWF0IjoxNzUxMDE1Nzc3LCJleHAiOjE3NTE2MjA1Nzd9.xE0Mfa3OVCQg6J-CwgJOH1cHtqw3JvlOIcRTsL86ISQ";
-
-// import { useEffect, useRef, useState } from "react"
-
-// interface Rectangle {
-//   x: number,
-//   y: number,
-//   width: number,
-//   height: number
-// }
-
-// const Canvas = () => {
-//   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-//   const isDrawing = useRef(false);
-//   const startX = useRef<number>(0);
-//   const startY = useRef<number>(0);
-//   const committedRects = useRef<Rectangle[]>([]);
-
-//   const getCanvasCoordinates = (e: MouseEvent, canvas: HTMLCanvasElement) => {
-//     const rect = canvas.getBoundingClientRect();
-//     return {
-//       x: e.clientX - rect.left,
-//       y: e.clientY - rect.top
-//     }
-//   }
-
-//   const handleMouseDown = (e: MouseEvent) => {
-//     isDrawing.current = true;
-//     console.log("isDrawing from mousedown: ", isDrawing);
-//     const canvas = canvasRef.current;
-//     if(!canvas) {
-//       console.log("canvas is null");
-//       return;
-//     }
-//     const coords = getCanvasCoordinates(e, canvas);
-//     startX.current = coords.x;
-//     startY.current = coords.y;
-//   }
-  
-//   const handleMouseUp = (e: MouseEvent) => {
-//     isDrawing.current = false;
-//     const canvas = canvasRef.current;
-//     if(!canvas) {
-//       console.log("canvas is null");
-//       return;
-//     }
-//     const context = canvas.getContext("2d");
-//     if(!context) {
-//       console.log("Context is null");
-//       return;
-//     }
-//     const coords = getCanvasCoordinates(e, canvas);
-//     const width = coords.x - startX.current;
-//     const height = coords.y - startY.current;
-
-//     committedRects.current.push({
-//       x: startX.current,
-//       y: startY.current,
-//       width: width,
-//       height: height
-//     });
-    
-//     context.strokeStyle = "white";
-//     context.strokeRect(startX.current, startY.current, width, height);
-//   }
-
-//   const handleMouseMove = (e: MouseEvent) => {
-//     if(!isDrawing.current) {
-//       return;
-//     }
-//     const canvas = canvasRef.current;
-//     if(!canvas) return;
-//     const context = canvas.getContext("2d");
-//     if(!context) return;
-
-//     const coords = getCanvasCoordinates(e, canvas);
-//     console.log("Log from mousemove x, y: ", coords.x, coords.y);
-
-//     context.clearRect(0, 0, canvas.width, canvas.height);
-
-//     committedRects.current.forEach(rect => {
-//       context.strokeStyle = "white";
-//       context.strokeRect(rect.x, rect.y, rect.width, rect.height);
-//     });
-
-//     const width = coords.x - startX.current;
-//     const height = coords.y - startY.current;
-//     context.strokeStyle = 'gray';
-//     context.strokeRect(startX.current, startY.current, width, height);
-//   }
-
-//   useEffect(() => {
-//     const canvas = canvasRef.current;
-//     if(!canvas) {
-//       console.log("canvas is null");
-//       return;
-//     }
-//     const context = canvas.getContext("2d");
-//     if(!context) {
-//       console.log("context is null");
-//       return;
-//     }
-
-//     const resizeCanvas = () => {
-//       canvas.width = canvas.offsetWidth;
-//       canvas.height = canvas.offsetHeight;
-//       console.log("resize called");
-//     }
-//     resizeCanvas();
-
-//     window.addEventListener('resize', resizeCanvas);
-//     canvas.addEventListener("mousedown", handleMouseDown);
-//     canvas.addEventListener("mouseup", handleMouseUp);
-//     canvas.addEventListener("mousemove", handleMouseMove);
-
-//     return () => {
-//       window.removeEventListener("resize", resizeCanvas);
-//       canvas.removeEventListener("mousedown", handleMouseDown);
-//       canvas.removeEventListener("mouseup", handleMouseUp);
-//       canvas.removeEventListener("mousemove", handleMouseMove);
-//     }
-
-//   }, [])
-
-//   return (
-//     <canvas ref={canvasRef} className="bg-black w-screen h-screen"/>
-//   )
-// }
-
-// export default Canvas;
 
 interface initMessageSchema {
   id: number,
@@ -149,8 +20,8 @@ interface initMessageSchema {
 
 const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const xDown = useRef<number>(0);
-  const yDown = useRef<number>(0);
+  const startX = useRef<number>(0);
+  const startY = useRef<number>(0);
   const isDrawing = useRef(false);
   const initMessages = useRef<initMessageSchema []>([])
   const beUrl = process.env.NEXT_PUBLIC_BE_URL;
@@ -178,8 +49,8 @@ const Canvas = () => {
     if(!canvas) return;
     const context = canvas.getContext("2d");
     const coords = getCanvasCoordinates(canvas, e);
-    xDown.current = coords.x;
-    yDown.current = coords.y;
+    startX.current = coords.x;
+    startY.current = coords.y;
   }, []);
 
   const handleMouseUp = useCallback(async (e: MouseEvent) => {
@@ -190,8 +61,8 @@ const Canvas = () => {
     if(!context) return;
 
     const coords = getCanvasCoordinates(canvas, e);
-    const width = coords.x - xDown.current;
-    const height = coords.y - yDown.current;
+    const width = coords.x - startX.current;
+    const height = coords.y - startY.current;
     if(!beUrl) {
       console.log("undefined backend url")
       return;
@@ -200,8 +71,8 @@ const Canvas = () => {
     const data = await axios.post(`${beUrl}/chats/${slug}`, {
       message: {
         type: "chat",
-        x: Number(xDown.current),
-        y: Number(yDown.current),
+        x: Number(startX.current),
+        y: Number(startY.current),
         width: Number(width),
         height: Number(height)
       }
@@ -213,9 +84,21 @@ const Canvas = () => {
     }
     );
     console.log(data);
+    initMessages.current.push({
+      id: 0,
+      message: {
+        type: "chat",
+        x: Number(startX.current),
+        y: Number(startY.current),
+        width: Number(width),
+        height: Number(height)
+      },
+      userId: "not-yet-assigned",
+      slug: slug,
+    })
 
     context.strokeStyle = "white";
-    context.strokeRect(xDown.current, yDown.current, width, height);
+    context.strokeRect(startX.current, startY.current, width, height);
   }, []);
 
   const handleMouseMove = useCallback(async (e: MouseEvent) => {
@@ -228,16 +111,16 @@ const Canvas = () => {
     if(!context) return;
 
     clearCanvas();
-    initCanvas();
+    secondaryInitCanvas();
 
     const coords = getCanvasCoordinates(canvas, e);
-    const width = coords.x - xDown.current; 
-    const height = coords.y - yDown.current;
-    xDown.current = width < 0 ? xDown.current + width: xDown.current; 
-    yDown.current = height < 0 ? yDown.current + height : yDown.current; 
+    let width = Math.abs(coords.x - startX.current); 
+    let height = Math.abs(coords.y - startY.current);
+    const x = Math.min(startX.current, coords.x);
+    const y = Math.min(startY.current, coords.y);
+
     context.strokeStyle = "white";
-    context.strokeRect(xDown.current, yDown.current, Math.abs(width), Math.abs(height));
-    
+    context.strokeRect(x, y, width, height);
   }, []);
 
   const fetchData = async () => {
@@ -274,6 +157,25 @@ const Canvas = () => {
       context.strokeRect(x, y, width, height);
     });
     initMessages.current = parsedMessages;
+  }
+
+  const secondaryInitCanvas = () => {
+    const canvas = canvasRef.current;
+    if(!canvas) {
+      console.log("canvas is null");
+      return;
+    }
+    const context = canvas.getContext("2d");
+    if(!context) {
+      console.log("context is null");
+      return;
+    }
+    context.strokeStyle = "white";
+    console.log("initMessages from secondary: ", initMessages.current);
+    initMessages.current.forEach((msg) => {
+      const {x, y, width, height} = msg.message;
+      context.strokeRect(x, y, width, height);
+    })
   }
 
   useEffect(() => {
