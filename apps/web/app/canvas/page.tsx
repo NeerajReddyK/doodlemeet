@@ -1,9 +1,9 @@
 "use client"
 
-import { use, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 const slug = "neerajroom2";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNWRiMjViNy1iZjc5LTRkMTItYTQ3MC1iZDg1OTEzNjRlMGMiLCJlbWFpbCI6Im5lZXJhajFAZ21haWwuY29tIiwiaWF0IjoxNzUxMDE1Nzc3LCJleHAiOjE3NTE2MjA1Nzd9.xE0Mfa3OVCQg6J-CwgJOH1cHtqw3JvlOIcRTsL86ISQ";
+const token = localStorage.getItem("token");
 
 interface initMessageSchema {
   id: number,
@@ -19,6 +19,11 @@ interface initMessageSchema {
 }
 
 const Canvas = () => {
+  if(!token) {
+    // should be removed in prod.
+    console.log("User not authenticated.")
+    return;
+  }
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const startX = useRef<number>(0);
   const startY = useRef<number>(0);
@@ -188,7 +193,6 @@ const Canvas = () => {
     }
 
     initCanvas();
-
 
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth; 
